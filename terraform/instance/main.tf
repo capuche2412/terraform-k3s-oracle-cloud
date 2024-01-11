@@ -29,7 +29,7 @@ resource "oci_core_instance" "arm" {
 }
 
 resource "oci_core_instance" "amd" {
-  count               = 2
+  count               = 1
   compartment_id      = var.compartment_id
   availability_domain = data.oci_identity_availability_domain.ad_1.name
   display_name        = "k3s_amd_instance_${count.index}"
