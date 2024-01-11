@@ -1,7 +1,7 @@
 resource "oci_core_instance" "arm" {
   compartment_id      = var.compartment_id
   availability_domain = data.oci_identity_availability_domain.ad_1.name
-  display_name        = "k3s_arm_instance"
+  display_name        = "k3s-arm-instance"
   shape               = local.arm_instance_config.shape_id
   source_details {
     source_id   = local.arm_instance_config.source_id
