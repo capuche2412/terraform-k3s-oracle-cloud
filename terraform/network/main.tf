@@ -49,14 +49,14 @@ resource "oci_core_subnet" "cluster_subnet" {
   security_list_ids = [oci_core_vcn.cluster_network.default_security_list_id]
 }
 
-resource "oci_core_network_security_group" "allow_ssh" {
+resource "oci_core_network_security_group" "allow_traffic" {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.cluster_network.id
-  display_name   = "Permit SSH"
+  display_name   = "Allow SSH, HTTP, HTTPS"
 }
 
 resource "oci_core_network_security_group_security_rule" "allow_ssh" {
-  network_security_group_id = oci_core_network_security_group.allow_ssh.id
+  network_security_group_id = oci_core_network_security_group.allow_traffic.id
   protocol                  = "6" // TCP
   source                    = "0.0.0.0/0"
   source_type               = "CIDR_BLOCK"
@@ -64,6 +64,34 @@ resource "oci_core_network_security_group_security_rule" "allow_ssh" {
     destination_port_range {
       max = 22
       min = 22
+    }
+  }
+  direction = "INGRESS"
+}
+
+resource "oci_core_network_security_group_security_rule" "allow_http" {
+  network_security_group_id = oci_core_network_security_group.allow_traffic.id
+  protocol                  = "6" // TCP
+  source                    = "0.0.0.0/0"
+  source_type               = "CIDR_BLOCK"
+  tcp_options {
+    destination_port_range {
+      max = 80
+      min = 80
+    }
+  }
+  direction = "INGRESS"
+}
+
+resource "oci_core_network_security_group_security_rule" "allow_https" {
+  network_security_group_id = oci_core_network_security_group.allow_traffic.id
+  protocol                  = "6" // TCP
+  source                    = "0.0.0.0/0"
+  source_type               = "CIDR_BLOCK"
+  tcp_options {
+    destination_port_range {
+      max = 443
+      min = 443
     }
   }
   direction = "INGRESS"

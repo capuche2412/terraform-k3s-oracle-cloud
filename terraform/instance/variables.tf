@@ -1,4 +1,4 @@
-variable "allow_ssh_nsg_id" {
+variable "allow_traffic_network_security_group_id" {
   description = "SSH Network Security Group ID"
   type        = string
 }

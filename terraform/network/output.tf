@@ -9,7 +9,7 @@ output "cluster_subnet" {
   depends_on  = [oci_core_subnet.cluster_subnet]
 }
 
-output "allow_ssh" {
-  description = "Network Security Group to permit ssh"
-  value       = oci_core_network_security_group.allow_ssh
+output "allow_traffic" {
+  description = "Network Security Group to allow SSGH, HTTP & HTTPS"
+  value       = oci_core_network_security_group.allow_traffic
 }
