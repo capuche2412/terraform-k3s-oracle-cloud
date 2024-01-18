@@ -1,4 +1,10 @@
 resource "oci_core_instance" "arm" {
+  lifecycle {
+    ignore_changes = [
+      availability_domain
+    ]
+  }
+
   compartment_id      = var.compartment_id
   availability_domain = data.oci_identity_availability_domain.ad_1.name
   display_name        = "k3s-arm-instance"
@@ -22,6 +28,12 @@ resource "oci_core_instance" "arm" {
 }
 
 resource "oci_core_instance" "amd" {
+  lifecycle {
+    ignore_changes = [
+      availability_domain
+    ]
+  }
+
   count               = 1
   compartment_id      = var.compartment_id
   availability_domain = data.oci_identity_availability_domain.ad_1.name

@@ -52,7 +52,7 @@ resource "oci_core_subnet" "cluster_subnet" {
 resource "oci_core_network_security_group" "allow_traffic" {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.cluster_network.id
-  display_name   = "Allow SSH, HTTP, HTTPS"
+  display_name   = "Allow k3s networking"
 }
 
 resource "oci_core_network_security_group_security_rule" "allow_ssh" {
@@ -94,5 +94,28 @@ resource "oci_core_network_security_group_security_rule" "allow_https" {
       min = 443
     }
   }
+  direction = "INGRESS"
+}
+
+resource "oci_core_network_security_group_security_rule" "allow_kubeAPI" {
+  network_security_group_id = oci_core_network_security_group.allow_traffic.id
+  protocol                  = "6" // TCP
+  source                    = "0.0.0.0/0"
+  source_type               = "CIDR_BLOCK"
+  tcp_options {
+    destination_port_range {
+      max = 6443
+      min = 6443
+    }
+  }
+  direction = "INGRESS"
+}
+
+resource "oci_core_network_security_group_security_rule" "allow_intraVCN" {
+  network_security_group_id = oci_core_network_security_group.allow_traffic.id
+  protocol                  = "all"
+  source                    = "10.0.0.0/8"
+  source_type               = "CIDR_BLOCK"
+
   direction = "INGRESS"
 }

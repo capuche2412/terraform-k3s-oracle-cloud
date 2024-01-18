@@ -37,3 +37,14 @@ module "instance" {
 
   cidr_blocks = local.cidr_blocks
 }
+
+module "load_balancer" {
+  source     = "./load_balancer"
+  depends_on = [module.instance]
+
+  compartment_id = var.compartment_id
+  tenancy_ocid   = var.tenancy_ocid
+
+  backend_ip_address = module.instance.cluster_server_ip
+  k3s_cluster_subnet = module.network.cluster_subnet
+}
