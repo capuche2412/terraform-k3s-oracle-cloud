@@ -1,27 +1,10 @@
 resource "oci_core_vcn" "cluster_network" {
   compartment_id = var.compartment_id
 
-  cidr_blocks = var.cidr_blocks
+  cidr_blocks = [var.cidr_blocks["vcn"]]
 
   display_name = "galdren-vcn"
   dns_label    = "galdrenvcn"
-}
-
-resource "oci_core_default_security_list" "default_list" {
-  manage_default_resource_id = oci_core_vcn.cluster_network.default_security_list_id
-
-  display_name = "Outbound only (default)"
-
-  egress_security_rules {
-    protocol    = "all" // TCP
-    description = "Allow outbound"
-    destination = "0.0.0.0/0"
-  }
-  ingress_security_rules {
-    protocol    = "all"
-    description = "Allow inter-subnet traffic"
-    source      = var.cidr_blocks[0]
-  }
 }
 
 resource "oci_core_internet_gateway" "internet_gateway" {
@@ -41,81 +24,77 @@ resource "oci_core_default_route_table" "internet_route_table" {
   }
 }
 
-resource "oci_core_subnet" "cluster_subnet" {
-  compartment_id    = var.compartment_id
-  vcn_id            = oci_core_vcn.cluster_network.id
-  cidr_block        = oci_core_vcn.cluster_network.cidr_blocks[0]
-  display_name      = "cluster subnet"
-  security_list_ids = [oci_core_vcn.cluster_network.default_security_list_id]
-}
+resource "oci_core_default_security_list" "default_list" {
+  manage_default_resource_id = oci_core_vcn.cluster_network.default_security_list_id
 
-resource "oci_core_network_security_group" "allow_traffic" {
-  compartment_id = var.compartment_id
-  vcn_id         = oci_core_vcn.cluster_network.id
-  display_name   = "Allow k3s networking"
-}
+  display_name = "Outbound only (default)"
 
-resource "oci_core_network_security_group_security_rule" "allow_ssh" {
-  network_security_group_id = oci_core_network_security_group.allow_traffic.id
-  protocol                  = "6" // TCP
-  source                    = "0.0.0.0/0"
-  source_type               = "CIDR_BLOCK"
-  tcp_options {
-    destination_port_range {
+  # Egress rules
+
+  egress_security_rules {
+    protocol    = "all" // TCP
+    description = "Allow outbound"
+    destination = "0.0.0.0/0"
+  }
+
+  # Ingress rules
+
+  ingress_security_rules {
+    protocol    = "all"
+    description = "Allow inter-subnet traffic"
+    source      = var.cidr_blocks["vcn"]
+  }
+  ingress_security_rules {
+    protocol    = "6" // TCP
+    description = "Allow SSH traffic"
+    source      = "0.0.0.0/0"
+
+    tcp_options {
       max = 22
       min = 22
     }
   }
-  direction = "INGRESS"
 }
 
-resource "oci_core_network_security_group_security_rule" "allow_http" {
-  network_security_group_id = oci_core_network_security_group.allow_traffic.id
-  protocol                  = "6" // TCP
-  source                    = "0.0.0.0/0"
-  source_type               = "CIDR_BLOCK"
-  tcp_options {
-    destination_port_range {
+resource "oci_core_security_list" "accept_connections_from_outside" {
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.cluster_network.id
+
+  display_name = "Accept HTTP,HTTPS from outside"
+
+  # Egress rules
+
+  egress_security_rules {
+    protocol    = "all"
+    description = "Allow outbound"
+    destination = "0.0.0.0/0"
+  }
+
+  # Ingress rules
+
+  ingress_security_rules {
+    protocol    = "all"
+    description = "Allow inter-subnet traffic"
+    source      = var.cidr_blocks["vcn"]
+  }
+  ingress_security_rules {
+    protocol    = "6" // TCP
+    description = "Allow HTTP traffic"
+    source      = "0.0.0.0/0"
+
+    tcp_options {
       max = 80
       min = 80
     }
   }
-  direction = "INGRESS"
-}
+  ingress_security_rules {
+    protocol    = "6" // TCP
+    description = "Allow HTTPS traffic"
+    source      = "0.0.0.0/0"
 
-resource "oci_core_network_security_group_security_rule" "allow_https" {
-  network_security_group_id = oci_core_network_security_group.allow_traffic.id
-  protocol                  = "6" // TCP
-  source                    = "0.0.0.0/0"
-  source_type               = "CIDR_BLOCK"
-  tcp_options {
-    destination_port_range {
+    tcp_options {
       max = 443
       min = 443
     }
   }
-  direction = "INGRESS"
-}
-
-resource "oci_core_network_security_group_security_rule" "allow_kubeAPI" {
-  network_security_group_id = oci_core_network_security_group.allow_traffic.id
-  protocol                  = "6" // TCP
-  source                    = "0.0.0.0/0"
-  source_type               = "CIDR_BLOCK"
-  tcp_options {
-    destination_port_range {
-      max = 6443
-      min = 6443
-    }
-  }
-  direction = "INGRESS"
-}
-
-resource "oci_core_network_security_group_security_rule" "allow_intraVCN" {
-  network_security_group_id = oci_core_network_security_group.allow_traffic.id
-  protocol                  = "all"
-  source                    = "10.0.0.0/8"
-  source_type               = "CIDR_BLOCK"
-
-  direction = "INGRESS"
 }

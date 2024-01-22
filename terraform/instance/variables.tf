@@ -1,5 +1,5 @@
-variable "allow_traffic_network_security_group_id" {
-  description = "SSH Network Security Group ID"
+variable "internal_cluster_nsg_id" {
+  description = "Instance Network Security Group ID"
   type        = string
 }
 
@@ -13,7 +13,7 @@ variable "compartment_id" {
 }
 
 variable "cluster_subnet_id" {
-  description = "Subnet of the k3s cluser"
+  description = "Instance subnet ID"
 }
 
 variable "ssh_authorized_public_keys" {

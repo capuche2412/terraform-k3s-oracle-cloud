@@ -29,11 +29,11 @@ module "instance" {
   source     = "./instance"
   depends_on = [module.network]
 
-  compartment_id                          = var.compartment_id
-  tenancy_ocid                            = var.tenancy_ocid
-  cluster_subnet_id                       = module.network.cluster_subnet.id
-  allow_traffic_network_security_group_id = module.network.allow_traffic.id
-  ssh_authorized_public_keys              = var.ssh_authorized_public_keys
+  compartment_id             = var.compartment_id
+  tenancy_ocid               = var.tenancy_ocid
+  cluster_subnet_id          = module.network.cluster_subnet.id
+  internal_cluster_nsg_id    = module.network.cluster_internal_nsg.id
+  ssh_authorized_public_keys = var.ssh_authorized_public_keys
 
   cidr_blocks = local.cidr_blocks
 }
@@ -46,5 +46,6 @@ module "load_balancer" {
   tenancy_ocid   = var.tenancy_ocid
 
   backend_ip_address = module.instance.cluster_server_ip
-  k3s_cluster_subnet = module.network.cluster_subnet
+
+  lb_subnet_id = module.network.lb_subnet.id
 }

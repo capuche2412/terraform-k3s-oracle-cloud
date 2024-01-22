@@ -43,5 +43,7 @@ variable "ssh_authorized_public_keys" {
 }
 
 locals {
-  cidr_blocks = ["10.0.0.0/24"]
+  cidr_blocks = { vcn = "10.0.0.0/16"
+    instances = "10.0.0.0/24"
+  lb = "10.0.1.0/24" }
 }

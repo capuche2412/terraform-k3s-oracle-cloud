@@ -3,8 +3,8 @@ variable "compartment_id" {
   type        = string
 }
 
-variable "k3s_cluster_subnet" {
-  description = "k3s cluser subnet"
+variable "lb_subnet_id" {
+  description = "Load Balancer subnet ID"
 }
 
 variable "tenancy_ocid" {
@@ -17,3 +17,17 @@ variable "backend_ip_address" {
   type        = string
 }
 
+variable "http_lb_port" {
+  type    = number
+  default = 80
+}
+
+variable "https_lb_port" {
+  type    = number
+  default = 443
+}
+
+variable "kube_api_port" {
+  type    = number
+  default = 6443
+}

@@ -1,6 +1,5 @@
 variable "cidr_blocks" {
-  description = "CIDRs of the network, use index 0 for everything"
-  type        = list(any)
+  description = "CIDRs of the network"
 }
 
 variable "compartment_id" {
