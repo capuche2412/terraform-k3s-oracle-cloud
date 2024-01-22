@@ -54,6 +54,16 @@ resource "oci_core_default_security_list" "default_list" {
       min = 22
     }
   }
+  ingress_security_rules {
+    protocol    = "6" // TCP
+    description = "Allow SSH traffic"
+    source      = "0.0.0.0/0"
+
+    tcp_options {
+      max = 6443
+      min = 6443
+    }
+  }
 }
 
 resource "oci_core_security_list" "accept_connections_from_outside" {
