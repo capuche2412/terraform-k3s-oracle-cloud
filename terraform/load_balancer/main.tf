@@ -4,6 +4,11 @@ resource "oci_core_public_ip" "load_balancer_public_ip" {
   lifetime       = "RESERVED"
 
   display_name = "load_balancer_public_ip"
+  lifecycle { // Workaround : https://github.com/oracle/terraform-provider-oci/issues/1893
+    ignore_changes = [
+      private_ip_id
+    ]
+  }
 }
 
 resource "oci_network_load_balancer_network_load_balancer" "lb_k3s_cluster" {
@@ -36,6 +41,7 @@ resource "oci_network_load_balancer_backend_set" "k3s_http_backend_set" {
   network_load_balancer_id = oci_network_load_balancer_network_load_balancer.lb_k3s_cluster.id
   name                     = "k3s_http_backend_set"
   policy                   = "FIVE_TUPLE"
+  is_preserve_source       = false
 }
 
 resource "oci_network_load_balancer_backend" "k3s_http_server_backend" {
@@ -68,6 +74,7 @@ resource "oci_network_load_balancer_backend_set" "k3s_https_backend_set" {
   network_load_balancer_id = oci_network_load_balancer_network_load_balancer.lb_k3s_cluster.id
   name                     = "k3s_https_backend_set"
   policy                   = "FIVE_TUPLE"
+  is_preserve_source       = false
 }
 
 resource "oci_network_load_balancer_backend" "k3s_https_server_backend" {
